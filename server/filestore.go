@@ -242,6 +242,8 @@ const (
 	minMetaKeySize = 64
 	minBlkKeySize  = 64
 
+	maxMsgSize = 128 * 1024 * 1024
+
 	// Default stream block size.
 	defaultLargeBlockSize = 8 * 1024 * 1024 // 8MB
 	// Default for workqueue or interest based.
@@ -252,7 +254,7 @@ const (
 	// Default for KV based
 	defaultKVBlockSize = defaultMediumBlockSize
 	// max block size for now.
-	maxBlockSize = defaultLargeBlockSize
+	maxBlockSize = maxMsgSize
 	// Compact minimum threshold.
 	compactMinimum = 2 * 1024 * 1024 // 2MB
 	// FileStoreMinBlkSize is minimum size we will do for a blk size.
@@ -260,7 +262,7 @@ const (
 	// FileStoreMaxBlkSize is maximum size we will do for a blk size.
 	FileStoreMaxBlkSize = maxBlockSize
 	// Check for bad record length value due to corrupt data.
-	rlBadThresh = 32 * 1024 * 1024
+	rlBadThresh = 2 * maxMsgSize,
 	// Time threshold to write index info.
 	wiThresh = int64(2 * time.Second)
 	// Time threshold to write index info for non FIFO cases
@@ -3526,7 +3528,7 @@ func (mb *msgBlock) indexCacheBuf(buf []byte) error {
 		dlen := int(rl) - msgHdrSize
 
 		// Do some quick sanity checks here.
-		if dlen < 0 || int(slen) > dlen || dlen > int(rl) || rl > 32*1024*1024 {
+		if dlen < 0 || int(slen) > dlen || dlen > int(rl) || rl > rlBadThresh {
 			// This means something is off.
 			// TODO(dlc) - Add into bad list?
 			return errCorruptState

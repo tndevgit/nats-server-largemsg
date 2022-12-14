@@ -5750,7 +5750,8 @@ func (fs *fileStore) Snapshot(deadline time.Duration, checkMsgs, includeConsumer
 	}
 
 	// We can add to our stream while snapshotting but not delete anything.
-	state := fs.State()
+	var state StreamState
+	fs.FastState(&state)
 
 	// Stream in separate Go routine.
 	go fs.streamSnapshot(pw, &state, includeConsumers)
@@ -6536,6 +6537,7 @@ func (o *consumerFileStore) stateWithCopy(doCopy bool) (*ConsumerState, error) {
 	return state, nil
 }
 
+// Decode consumer state.
 func decodeConsumerState(buf []byte) (*ConsumerState, error) {
 	version, err := checkConsumerHeader(buf)
 	if err != nil {
@@ -6603,7 +6605,8 @@ func decodeConsumerState(buf []byte) (*ConsumerState, error) {
 				dseq = readSeq()
 			}
 			ts := readTimeStamp()
-			if ts == -1 {
+			// Check the state machine for corruption, not the value which could be -1.
+			if bi == -1 {
 				return nil, errCorruptState
 			}
 			// Adjust seq back.

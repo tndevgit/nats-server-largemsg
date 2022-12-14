@@ -262,7 +262,7 @@ const (
 	// FileStoreMaxBlkSize is maximum size we will do for a blk size.
 	FileStoreMaxBlkSize = maxBlockSize
 	// Check for bad record length value due to corrupt data.
-	rlBadThresh = 2 * maxMsgSize,
+	rlBadThresh = 2 * maxMsgSize
 	// Time threshold to write index info.
 	wiThresh = int64(2 * time.Second)
 	// Time threshold to write index info for non FIFO cases
